@@ -1,7 +1,7 @@
 
 
 
-Shader "GLSL basic shader" { // defines the name of the shader 
+Shader "Feather GEO Shader" { // defines the name of the shader 
 
 	Properties{
 	   _MainTex("Texture Image", 2D) = "white" {}
