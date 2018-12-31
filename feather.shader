@@ -97,7 +97,6 @@ Shader "GLSL basic shader" { // defines the name of the shader
 				return vec3(val_a,val_b,1.-(val_a+val_b));  
 			}
 
-
 			mat3 rotationMatrix(vec3 axis, float angle){
 				// build rotation matrix for feather rotation
 				axis = normalize(axis);
@@ -110,9 +109,7 @@ Shader "GLSL basic shader" { // defines the name of the shader
 							oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c);
 			}
 
-
 			#ifdef VERTEX // here begins the vertex shader
-
 
 				out VertexData
 				{
@@ -188,7 +185,6 @@ Shader "GLSL basic shader" { // defines the name of the shader
 					// get feather area
 					float area = tri_area(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_in[2].gl_Position);
 
-
 					vec2 co = vec2(inData[0].v_texcoord.x, inData[1].v_texcoord.y);
 					vec3 bary_coord;
 
@@ -228,8 +224,6 @@ Shader "GLSL basic shader" { // defines the name of the shader
 						EndPrimitive();
 
 					}
-
-
 				}
 			#endif
 
@@ -256,7 +250,7 @@ Shader "GLSL basic shader" { // defines the name of the shader
 
 			#endif // here ends the definition of the fragment shader
 
-	        ENDGLSL // here ends the part in GLSL 
-        }
+	        	ENDGLSL // here ends the part in GLSL 
+        	}
 	}
 }
