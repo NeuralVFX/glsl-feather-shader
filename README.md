@@ -1,7 +1,7 @@
 # glsl-feather-shader
 GLSL feather instancing geometry shader for Unity
 
-![](example/duck.jpg)
+!["https://vimeo.com/308870254"](example/vimeo.jpg)
 # Usage
 
 - Start Unity with -force-opengl 
