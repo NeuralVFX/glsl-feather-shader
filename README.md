@@ -1,7 +1,7 @@
 # glsl-feather-shader
 GLSL feather instancing geometry shader for Unity
 
-![](example/duck.jpg)
+![](example/duck.jpg){:height="50%" width="50%"}
 
 # Usage
 
