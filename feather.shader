@@ -1,6 +1,5 @@
 
 
-
 Shader "Feather GEO Shader" { // defines the name of the shader 
 
 	Properties{
@@ -11,93 +10,94 @@ Shader "Feather GEO Shader" { // defines the name of the shader
 	}
 
 		SubShader{ // Unity chooses the subshader that fits the GPU best
-		    Pass {
-		    Cull Off // some shaders require multiple passes
-		    GLSLPROGRAM // here begins the part in Unity's GLSL\
+			Pass {
+           		Tags { "LightMode" = "ForwardBase" }
+			Cull Off // some shaders require multiple passes
+			GLSLPROGRAM // here begins the part in Unity's GLSL\
 		    #include "UnityCG.glslinc" 
 
 			uniform mat4 unity_CameraProjection;
-			uniform vec4 unity_Scale; 
+			uniform vec4 unity_Scale;
 			uniform float _Scale;
 			uniform float _Rotate;
 			uniform float _Density;
 			uniform sampler2D _MainTex;
 
-			mat3 get_face_matrix(vec4 pos_0,vec4 pos_1,vec4 pos_2, vec2 uv_0,vec2 uv_1, vec2 uv_2, vec3 n){
+			mat3 get_face_matrix(vec4 pos_0,vec4 pos_1,vec4 pos_2, vec2 uv_0,vec2 uv_1, vec2 uv_2, vec3 n) {
 				// make position basis vectors
-				vec3 p_dx = pos_1.xyz- pos_0.xyz;
-				vec3 p_dy = pos_2.xyz- pos_0.xyz;
+				vec3 p_dx = pos_1.xyz - pos_0.xyz;
+				vec3 p_dy = pos_2.xyz - pos_0.xyz;
 
 				// make uv basis vactors
-				vec2 tc_dx = uv_1-uv_0;
-				vec2 tc_dy = uv_2-uv_0;
-    
+				vec2 tc_dx = uv_1 - uv_0;
+				vec2 tc_dy = uv_2 - uv_0;
+
 				// basis matrices
 				mat3x3 poly_basis = mat3x3(p_dx,p_dy,n);
 				mat2x2 uv_basis = mat2x2(tc_dx,tc_dy);
-    
+
 				// convert X
 				mat2x2 inv_uv = inverse(uv_basis);
-				vec2 def_space = inv_uv*vec2(1.0,0.);
+				vec2 def_space = inv_uv * vec2(1.0,0.);
 				vec3 def_space_3 = vec3(def_space,0.);
 				vec3 t = normalize(poly_basis*def_space_3);
-    
+
 				// convert Z
-				vec2 def_space_y = inv_uv*vec2(0,1.);
+				vec2 def_space_y = inv_uv * vec2(0,1.);
 				vec3 def_space_3_y = vec3(def_space_y,0.);
 				vec3 x = normalize(poly_basis*def_space_3_y);
-    
+
 				// make clean Y
 				n = cross(x,t);
 
 				mat3 tbn = mat3(t, n, x);
-    
+
 				return tbn;
 			}
 
-			float tri_area(vec4 a,vec4 b,vec4 c){
+			float tri_area(vec4 a,vec4 b,vec4 c) {
 				// caculate triangle area
 				float ab = distance(a,b);
 				float ac = distance(a,c);
 				float cb = distance(c,b);
-				float p = (ab+ ac+ cb)/2.;
-				float area = sqrt(p*(p -ab)*( p -ac)*(p -cb));
+				float p = (ab + ac + cb) / 2.;
+				float area = sqrt(p*(p - ab)*(p - ac)*(p - cb));
 				return area;
 			}
 
-			vec4 avg_from_bary_4(vec4 a,vec4 b,vec4 c,vec3 bary){
+			vec4 avg_from_bary_4(vec4 a,vec4 b,vec4 c,vec3 bary) {
 				// average a 3d vector based on barycentric coords
-				vec4 avg = ((a*bary.x)+(b*bary.y)+(c*bary.z));
+				vec4 avg = ((a*bary.x) + (b*bary.y) + (c*bary.z));
 				return avg;
 			}
 
-			vec2 avg_from_bary_2(vec2 a,vec2 b,vec2 c,vec3 bary){
+			vec2 avg_from_bary_2(vec2 a,vec2 b,vec2 c,vec3 bary) {
 				// average a 2d vector using barycentrix coords
-				vec2 avg = ((a*bary.x)+(b*bary.y)+(c*bary.z));
+				vec2 avg = ((a*bary.x) + (b*bary.y) + (c*bary.z));
 				return avg;
 			}
 
-			float rand(vec2 co){
+			float rand(vec2 co) {
 				// get random number
 				return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453)*3.1;
 			}
 
-			vec3 rand_bary_coord(vec2 co){
+			vec3 rand_bary_coord(vec2 co) {
 				// find random barycentric coords
 				float val_a = .2;
 				float val_b = 1.2;
 
 				vec2 co_a = co;
-    
-				for (float i= 0;i < 100. || (val_a+val_b) > 1.;i++ ){
-					val_a = rand(co+i);
+
+				for (float i = 0; i < 100. || (val_a + val_b) > 1.; i++) {
+					val_a = rand(co + i);
 					val_b = rand(vec2(co_a.x,val_a));
 					co_a += vec2(val_a,val_b);
 				}
-				return vec3(val_a,val_b,1.-(val_a+val_b));  
+				return vec3(val_a,val_b,1. - (val_a + val_b));
 			}
 
-			mat3 rotationMatrix(vec3 axis, float angle){
+			mat3 rotationMatrix(vec3 axis, float angle) {
 				// build rotation matrix for feather rotation
 				axis = normalize(axis);
 				float s = sin(angle);
@@ -125,15 +125,15 @@ Shader "Feather GEO Shader" { // defines the name of the shader
 					gl_Position = gl_Vertex;
 
 
-					outData.v_position =  gl_Vertex;
+					outData.v_position = gl_Vertex;
 					outData.v_normal = normalize(vec4(-gl_Normal,0)).xyz;
 					// set light rotation to object space
-					outData.light_dir = (normalize(unity_WorldToObject*_WorldSpaceLightPos0).xyz);
+					outData.light_dir = (unity_WorldToObject*_WorldSpaceLightPos0).xyz;
 					outData.v_texcoord = gl_MultiTexCoord0.xy;
 				}
 
 			#endif // here ends the definition of the vertex shader
-			
+
 			#ifdef GEOMETRY
 				in VertexData
 				{
@@ -156,7 +156,7 @@ Shader "Feather GEO Shader" { // defines the name of the shader
 				void main()
 				{
 					// set light dir
-					outData.light_dir = normalize(gl_NormalMatrix * inData[0].light_dir);
+					outData.light_dir = gl_NormalMatrix * inData[0].light_dir;
 
 					// create original surface polygons
 					outData.v_texcoord = inData[0].v_texcoord;
@@ -189,7 +189,7 @@ Shader "Feather GEO Shader" { // defines the name of the shader
 					vec3 bary_coord;
 
 					// create feathers
-					for (float i = 1.; i < area*_Density; i++){
+					for (float i = 1.; i < area*_Density; i++) {
 						// select barycentric coordinate
 						bary_coord = rand_bary_coord(co);
 						co += bary_coord.xy;
@@ -198,10 +198,10 @@ Shader "Feather GEO Shader" { // defines the name of the shader
 						vec2 uv = avg_from_bary_2(inData[0].v_texcoord, inData[1].v_texcoord, inData[2].v_texcoord, bary_coord);
 
 						// buid feather
-						vec3 norm = normalize(gl_NormalMatrix*( face_mat * vec3(0, -1, 0)));
+						vec3 norm = normalize(gl_NormalMatrix*(face_mat * vec3(0, -1, 0)));
 						outData.v_texcoord = uv;
 						outData.v_normal = norm;
-						gl_Position = gl_ModelViewProjectionMatrix *(vec4(face_mat*(vec3(-0.00214230008423,0, 0)*_Scale), 0) + feath_pos);
+						gl_Position = gl_ModelViewProjectionMatrix * (vec4(face_mat*(vec3(-0.00214230008423,0, 0)*_Scale), 0) + feath_pos);
 						EmitVertex();
 						gl_Position = gl_ModelViewProjectionMatrix * (vec4(face_mat*(vec3(-0.0638984024525,0, .1)*_Scale), 0) + feath_pos);
 						EmitVertex();
@@ -225,6 +225,7 @@ Shader "Feather GEO Shader" { // defines the name of the shader
 
 					}
 				}
+
 			#endif
 
 			#ifdef FRAGMENT // here begins the fragment shader
@@ -240,17 +241,17 @@ Shader "Feather GEO Shader" { // defines the name of the shader
 			void main() // all fragment shaders define a main() function
 			{
 				// simple lambert lighting
-				float lgt = clamp(dot(inData.v_normal, -inData.light_dir),0.,1.);
+				float lgt = clamp(dot(normalize(inData.v_normal), -normalize(inData.light_dir)),0.,1.);
 				lgt = lgt * .5 + .5;
 				vec4 tex = texture2D(_MainTex, inData.v_texcoord);
 
-				gl_FragColor = tex*lgt;
-		  
+				gl_FragColor = tex * lgt;
+
 			}
 
 			#endif // here ends the definition of the fragment shader
 
-	        	ENDGLSL // here ends the part in GLSL 
-        	}
-	}
+			ENDGLSL // here ends the part in GLSL 
+			}
+	   }
 }
